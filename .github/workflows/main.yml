@@ -1,0 +1,139 @@
+name: ARM64EC Build (llvm-mingw + FEX)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-arm64ec:
+    runs-on: ubuntu-22.04-arm
+
+    env:
+      MINGW_TRIPLE: arm64ec-w64-mingw32
+      BUILD_TYPE: Release
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          wget tar cmake ninja-build clang pkg-config python3 \
+          build-essential libx11-dev libxcursor-dev libxrandr-dev \
+          libxi-dev libfreetype-dev libxext-dev libgl1-mesa-dev
+
+    - name: Download llvm-mingw toolchain (Billy Laws)
+      run: |
+        wget -q https://github.com/bylaws/llvm-mingw/releases/download/20250305/llvm-mingw-20250305-ucrt-ubuntu-20.04-aarch64.tar.xz
+        tar -xf llvm-mingw-20250305-ucrt-ubuntu-20.04-aarch64.tar.xz
+        echo "$PWD/llvm-mingw-20250305-ucrt-ubuntu-20.04-aarch64/bin" >> $GITHUB_PATH
+
+    - name: Setup rootfs env (optional)
+      run: |
+        echo "FEX_ROOTFS=$HOME/Rootfs" >> $GITHUB_ENV
+        echo "FEX_ROOTFS_PATH=$HOME/Rootfs" >> $GITHUB_ENV
+        echo "FEX_ROOTFS_MOUNT=/mnt/AutoNFS/rootfs" >> $GITHUB_ENV
+
+    - name: Fetch RootFS (if needed)
+      run: |
+        chmod +x $GITHUB_WORKSPACE/Scripts/CI_FetchRootFS.py || true
+        $GITHUB_WORKSPACE/Scripts/CI_FetchRootFS.py || true
+
+    - name: Sync submodules
+      run: git submodule sync --recursive && git submodule update --init --depth 1
+
+    - name: Clean build dir
+      run: rm -rf ${{ runner.workspace }}/build
+
+    - name: Create build dir
+      run: cmake -E make_directory ${{ runner.workspace }}/build
+
+    - name: Configure & build FEX (ARM64EC + WOW64)
+      working-directory: ${{ runner.workspace }}/build
+      run: |
+        cmake $GITHUB_WORKSPACE \
+          -G Ninja \
+          -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+          -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/toolchain_mingw.cmake \
+          -DMINGW_TRIPLE=$MINGW_TRIPLE \
+          -DENABLE_LTO=False \
+          -DENABLE_ASSERTIONS=True \
+          -DBUILD_TESTS=False \
+          -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/build/install \
+          -DUSE_PDB_DEBUGINFO=True
+        ninja
+        ninja install
+
+    - name: Show install dir (debug)
+      run: |
+        echo "Contents of install directory:"
+        ls -R ${{ runner.workspace }}/build/install || echo "No files found"
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: arm64ec-wine-fex
+        path: ${{ runner.workspace }}/build/install
+        retention-days: 5
+        if-no-files-found: warn
+        compression-level: 6
+        overwrite: false
+        include-hidden-files: false
+  
+  build-wow64:
+    runs-on: ubuntu-22.04-arm
+
+    env:
+      MINGW_TRIPLE: aarch64-w64-mingw32
+      BUILD_TYPE: Release
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive 
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          wget tar cmake ninja-build clang pkg-config python3 \
+          build-essential libx11-dev libxcursor-dev libxrandr-dev \
+          libxi-dev libfreetype-dev libxext-dev libgl1-mesa-dev
+
+    - name: Download llvm-mingw toolchain (Billy Laws)
+      run: |
+        wget -q https://github.com/bylaws/llvm-mingw/releases/download/20250305/llvm-mingw-20250305-ucrt-ubuntu-20.04-aarch64.tar.xz
+        tar -xf llvm-mingw-20250305-ucrt-ubuntu-20.04-aarch64.tar.xz
+        echo "$PWD/llvm-mingw-20250305-ucrt-ubuntu-20.04-aarch64/bin" >> $GITHUB_PATH
+
+    - name: Add mingw toolchain to PATH
+      run: echo "$PWD/llvm-mingw-20250305-ucrt-ubuntu-20.04-aarch64/bin" >> $GITHUB_PATH
+
+    - name: Create build-wow64 dir
+      run: cmake -E make_directory ${{ runner.workspace }}/build-wow64
+
+    - name: Configure & build FEX (WOW64)
+      working-directory: ${{ runner.workspace }}/build-wow64
+      run: |
+        cmake $GITHUB_WORKSPACE \
+          -G Ninja \
+          -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+          -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/toolchain_mingw.cmake \
+          -DMINGW_TRIPLE=$MINGW_TRIPLE \
+          -DENABLE_LTO=OFF \
+          -DENABLE_ASSERTIONS=ON \
+          -DBUILD_TESTS=OFF \
+          -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/build-wow64/install \
+          -DUSE_PDB_DEBUGINFO=True
+        ninja
+        ninja install
+
+    - name: Upload WOW64 libwow64fex
+      uses: actions/upload-artifact@v4
+      with:
+        name: wow64-fex
+        path: ${{ runner.workspace }}/build-wow64/install
+        retention-days: 5
