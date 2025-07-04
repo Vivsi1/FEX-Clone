@@ -65,9 +65,7 @@ jobs:
           -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/build/install \
           -DUSE_PDB_DEBUGINFO=True \
           -DENABLE_X86_HOST_DEBUG=True \
-          -DCMAKE_CXX_FLAGS="-static -static-libgcc -static-libstdc++" \
-          -DCMAKE_EXE_LINKER_FLAGS="-static -static-libgcc -static-libstdc++" \
-          -DCMAKE_SHARED_LINKER_FLAGS="-static -static-libgcc -static-libstdc++"
+          -DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++"
         ninja
         ninja install
 
@@ -133,9 +131,7 @@ jobs:
           -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/build-wow64/install \
           -DUSE_PDB_DEBUGINFO=True \
           -DENABLE_X86_HOST_DEBUG=True \
-          -DCMAKE_CXX_FLAGS="-static -static-libgcc -static-libstdc++" \
-          -DCMAKE_EXE_LINKER_FLAGS="-static -static-libgcc -static-libstdc++" \
-          -DCMAKE_SHARED_LINKER_FLAGS="-static -static-libgcc -static-libstdc++"
+          -DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++"
         ninja
         ninja install
 
