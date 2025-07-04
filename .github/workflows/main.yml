@@ -63,7 +63,7 @@ jobs:
           -DENABLE_ASSERTIONS=ON \
           -DBUILD_TESTS=OFF \
           -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON \
-          -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/build-arm64ec/install \
+          -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/build/install \
           -DUSE_PDB_DEBUGINFO=True 
         ninja
         ninja install
