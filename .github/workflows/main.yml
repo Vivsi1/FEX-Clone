@@ -58,14 +58,13 @@ jobs:
           -G Ninja \
           -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
           -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/toolchain_mingw.cmake \
-          -DMINGW_TRIPLE=arm64ec-w64-mingw32 \
-          -DENABLE_LTO=False \
-          -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
-          -DBUILD_TESTS=False \
-          -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/build/install \
-          -DUSE_PDB_DEBUGINFO=True \
-          -DENABLE_X86_HOST_DEBUG=True \
-          -DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++"
+          -DMINGW_TRIPLE=$MINGW_TRIPLE \
+          -DENABLE_LTO=OFF \
+          -DENABLE_ASSERTIONS=ON \
+          -DBUILD_TESTS=OFF \
+          -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON \
+          -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/build-wow64/install \
+          -DUSE_PDB_DEBUGINFO=True 
         ninja
         ninja install
 
@@ -124,14 +123,13 @@ jobs:
           -G Ninja \
           -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
           -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/toolchain_mingw.cmake \
-          -DMINGW_TRIPLE=aarch64-w64-mingw32 \
+          -DMINGW_TRIPLE=$MINGW_TRIPLE \
           -DENABLE_LTO=OFF \
-          -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
+          -DENABLE_ASSERTIONS=ON \
           -DBUILD_TESTS=OFF \
+          -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON \
           -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/build-wow64/install \
-          -DUSE_PDB_DEBUGINFO=True \
-          -DENABLE_X86_HOST_DEBUG=True \
-          -DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++"
+          -DUSE_PDB_DEBUGINFO=True 
         ninja
         ninja install
 
