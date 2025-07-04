@@ -63,7 +63,8 @@ jobs:
           -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
           -DBUILD_TESTS=False \
           -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/build/install \
-          -DUSE_PDB_DEBUGINFO=True
+          -DUSE_PDB_DEBUGINFO=True \
+          -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++"
         ninja
         ninja install
 
@@ -127,7 +128,8 @@ jobs:
           -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
           -DBUILD_TESTS=OFF \
           -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/build-wow64/install \
-          -DUSE_PDB_DEBUGINFO=True
+          -DUSE_PDB_DEBUGINFO=True \
+          -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++"
         ninja
         ninja install
 
