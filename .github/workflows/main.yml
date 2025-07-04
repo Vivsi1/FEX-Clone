@@ -58,9 +58,9 @@ jobs:
           -G Ninja \
           -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
           -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/toolchain_mingw.cmake \
-          -DMINGW_TRIPLE=$MINGW_TRIPLE \
+          -DMINGW_TRIPLE=arm64ec-w64-mingw32 \
           -DENABLE_LTO=False \
-          -DENABLE_ASSERTIONS=True \
+          -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
           -DBUILD_TESTS=False \
           -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/build/install \
           -DUSE_PDB_DEBUGINFO=True
@@ -122,9 +122,9 @@ jobs:
           -G Ninja \
           -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
           -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/toolchain_mingw.cmake \
-          -DMINGW_TRIPLE=$MINGW_TRIPLE \
+          -DMINGW_TRIPLE=aarch64-w64-mingw32 \
           -DENABLE_LTO=OFF \
-          -DENABLE_ASSERTIONS=ON \
+          -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
           -DBUILD_TESTS=OFF \
           -DCMAKE_INSTALL_PREFIX=${{ runner.workspace }}/build-wow64/install \
           -DUSE_PDB_DEBUGINFO=True
